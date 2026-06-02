@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Paper Trading Engine Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121214; color: #e1e1e6; margin: 0; padding: 30px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        h1 { color: #04d361; border-bottom: 2px solid #29292e; padding-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .card { background-color: #202024; padding: 20px; border-radius: 8px; border: 1px solid #29292e; }
+        .card h2 { margin-top: 0; color: #8257e5; border-bottom: 1px solid #29292e; padding-bottom: 5px; }
+        .metric { font-size: 18px; margin: 12px 0; display: flex; justify-content: space-between; }
+        .highlight { font-weight: bold; color: #04d361; }
+        label { display: block; margin: 10px 0 5px; color: #a8a8b3; }
+        select, input, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #29292e; background-color: #121214; color: white; font-size: 16px; box-sizing: border-box; }
+        button { background-color: #8257e5; color: white; font-weight: bold; cursor: pointer; border: none; transition: 0.2s; }
+        button:hover { background-color: #9466ff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #29292e; }
+        th { background-color: #121214; color: #a8a8b3; }
+        .badge-buy { color: #04d361; font-weight: bold; }
+        .badge-sell { color: #f75a68; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Chhote Sarkar's Trading Dashboard</h1>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Live Portfolio Wallet</h2>
+            <div class="metric">Trader ID: <span th:text="${portfolio.username}" style="color: #a8a8b3;">User</span></div>
+            <div class="metric">Available Cash: <span class="highlight" th:text="'$' + ${#numbers.formatDecimal(portfolio.balance, 1, 2)}">$0.00</span></div>
+            <div class="metric">Apple (AAPL) Shares: <span th:text="${portfolio.aaplHoldings}" style="color: #ffcd56; font-weight: bold;">0</span></div>
+            <div class="metric">Bitcoin (BTCUSD) Position: <span th:text="${portfolio.btcHoldings}" style="color: #36a2eb; font-weight: bold;">0</span></div>
+        </div>
+
+        <div class="card">
+            <h2>Place a Market Order</h2>
+            <form action="/dashboard/trade" method="post">
+                <label>Execution Action</label>
+                <select name="action">
+                    <option value="BUY">BUY ORDER (Long)</option>
+                    <option value="SELL">SELL ORDER (Liquidate)</option>
+                </select>
+
+                <label>Ticker Symbol</label>
+                <select name="symbol">
+                    <option value="AAPL">AAPL (Apple Inc.)</option>
+                    <option value="BTCUSD">BTCUSD (Bitcoin / USD)</option>
+                </select>
+
+                <label>Trade Quantity</label>
+                <input type="number" name="quantity" step="any" min="0.001" placeholder="Enter share or coin count..." required>
+
+                <button type="submit">Transmit Order to Core Engine</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Transactional Audit History Ledger</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Asset</th>
+                <th>Action</th>
+                <th>Volume Traded</th>
+                <th>Execution Price</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="record : ${history}">
+                <td th:text="'#' + ${record.id}">#1</td>
+                <td th:text="${record.symbol}" style="font-weight: bold;">AAPL</td>
+                <td>
+                    <span th:if="${record.orderType == 'BUY'}" class="badge-buy">BUY</span>
+                    <span th:if="${record.orderType == 'SELL'}" class="badge-sell">SELL</span>
+                </td>
+                <td th:text="${record.quantity}">0</td>
+                <td th:text="'$' + ${#numbers.formatDecimal(record.executionPrice, 1, 2)}">$0.00</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
